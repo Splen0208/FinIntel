@@ -1,0 +1,181 @@
+{
+  "__OFFLINE_FIXTURE__": true,
+  "__note__": "脱敏形状样本，非真实数据，不得当作平台可用性证据。字段结构依据本机已安装的 OpenCLI 1.8.8 clis/xiaohongshu/comments.js：columns=['rank','author','userId','profileUrl','text','likes','time','is_reply','reply_to','images']，**没有可靠的 comment_id**；reply_to 只是页面展示的回复对象名，不是评论 ID；time 是页面显示串，可能是相对时间（如「3 天前」）。",
+  "shape_source": "OpenCLI 1.8.8/clis/xiaohongshu/comments.js",
+  "cli_version": "opencli 1.8.8",
+  "command": "opencli xiaohongshu comments <note_url> --format json --limit 20 --with-replies",
+  "raw_stdout_shape": "bare JSON array of comment rows",
+  "limit_semantics": "--limit 是「根评论」上限，回复不计入该上限（comments.js 已证实）",
+  "locator": "https://www.xiaohongshu.com/search_result/657a0f11sample0001?xsec_token=SENTINEL_SECRET_XSEC_TOKEN_A",
+  "payload": [
+    {
+      "rank": 1,
+      "author": "样本用户A",
+      "userId": "5f8a0000sample0101",
+      "profileUrl": "https://www.xiaohongshu.com/user/profile/5f8a0000sample0101",
+      "text": "第一条样本评论：催收合规这块确实要看资质。",
+      "likes": 12,
+      "time": "3 天前",
+      "is_reply": false,
+      "reply_to": "",
+      "images": []
+    },
+    {
+      "rank": 2,
+      "author": "样本用户B",
+      "userId": "5f8a0000sample0102",
+      "profileUrl": "https://www.xiaohongshu.com/user/profile/5f8a0000sample0102",
+      "text": "第二条样本评论：面试会问逾期率口径。",
+      "likes": 3,
+      "time": "2026-09-21T09:30:00Z",
+      "is_reply": false,
+      "reply_to": "",
+      "images": []
+    },
+    {
+      "rank": 3,
+      "author": "样本用户C",
+      "userId": "5f8a0000sample0103",
+      "profileUrl": "https://www.xiaohongshu.com/user/profile/5f8a0000sample0103",
+      "text": "这是一条回复样本：口径确实要问清楚。",
+      "likes": 0,
+      "time": "昨天",
+      "is_reply": true,
+      "reply_to": "样本用户B",
+      "images": []
+    },
+    {
+      "rank": 4,
+      "author": "样本用户D",
+      "userId": "5f8a0000sample0104",
+      "profileUrl": "https://www.xiaohongshu.com/user/profile/5f8a0000sample0104",
+      "text": "第四条样本评论：建议先问清楚团队归属。",
+      "likes": 7,
+      "time": "09-22",
+      "is_reply": false,
+      "reply_to": "",
+      "images": []
+    }
+  ],
+  "expected": {
+    "root_count": 3,
+    "reply_count": 1,
+    "synthetic_keys": true,
+    "relative_time_rows": [
+      "3 天前",
+      "昨天"
+    ],
+    "parent_relation": "unknown — reply_to 是展示名，不得当父评论 ID"
+  },
+  "variants": {
+    "empty_ok": {
+      "__note__": "上游明示总数 0 → empty_ok（确实没有评论）",
+      "payload": {
+        "data": [],
+        "total": 0
+      }
+    },
+    "empty_unverified": {
+      "__note__": "空数组但无总数 → empty_unverified，不得宣称「0 条评论」",
+      "payload": []
+    },
+    "hidden_by_platform": {
+      "__note__": "平台明示评论不可见 → 必须报错，绝不当 0 条",
+      "payload": {
+        "data": [],
+        "commentsDisabled": true
+      }
+    },
+    "security_block": {
+      "__note__": "安全限制 → VERIFICATION_REQUIRED",
+      "payload": {
+        "data": [],
+        "securityBlock": true
+      }
+    },
+    "same_text_collision": {
+      "__note__": "同作者同正文同时间两条：现有字段无法区分 → 合成键必然碰撞，必须如实记录而不是假装采到两条",
+      "payload": [
+        {
+          "rank": 1,
+          "author": "样本用户A",
+          "userId": "u1",
+          "text": "完全相同的评论文本",
+          "likes": 1,
+          "time": "2026-09-21",
+          "is_reply": false,
+          "reply_to": "",
+          "images": []
+        },
+        {
+          "rank": 2,
+          "author": "样本用户A",
+          "userId": "u1",
+          "text": "完全相同的评论文本",
+          "likes": 9,
+          "time": "2026-09-21",
+          "is_reply": false,
+          "reply_to": "",
+          "images": []
+        }
+      ]
+    },
+    "likes_changed": {
+      "__note__": "与 payload 第一条是同一条评论，只是点赞数从 12 变成 999 → 合成键必须保持稳定（seed 剔除点赞数）",
+      "payload": [
+        {
+          "rank": 1,
+          "author": "样本用户A",
+          "userId": "5f8a0000sample0101",
+          "profileUrl": "https://www.xiaohongshu.com/user/profile/5f8a0000sample0101",
+          "text": "第一条样本评论：催收合规这块确实要看资质。",
+          "likes": 999,
+          "time": "3 天前",
+          "is_reply": false,
+          "reply_to": "",
+          "images": []
+        }
+      ]
+    },
+    "missing_metrics": {
+      "__note__": "缺 metrics/likes → like_count 必须是 None，不能填 0",
+      "payload": [
+        {
+          "rank": 1,
+          "author": "样本用户A",
+          "userId": "u1",
+          "text": "没有点赞数的评论",
+          "time": "2026-09-21",
+          "is_reply": false,
+          "reply_to": "",
+          "images": []
+        }
+      ]
+    },
+    "non_dict_row": {
+      "__note__": "非对象行 → 跳过并在 warnings 记录，不是空结果",
+      "payload": [
+        "这是一条坏行",
+        {
+          "rank": 1,
+          "author": "样本用户A",
+          "userId": "u1",
+          "text": "正常评论",
+          "likes": 0,
+          "time": "2026-09-21",
+          "is_reply": false,
+          "reply_to": "",
+          "images": []
+        }
+      ]
+    },
+    "dict_not_list": {
+      "__note__": "data 不是列表 → 契约错误",
+      "payload": {
+        "data": {
+          "foo": "bar"
+        }
+      }
+    }
+  }
+}

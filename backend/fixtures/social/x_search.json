@@ -1,0 +1,217 @@
+{
+  "__OFFLINE_FIXTURE__": true,
+  "__note__": "脱敏形状样本，非真实数据，不得当作平台可用性证据。字段结构依据本机 twitter-cli 0.8.5 的 twitter_cli/serialization.py::tweet_to_dict 与 twitter_cli/output.py::success_payload：JSON 信封为 {ok, schema_version, data:[...]}，推文字段为 camelCase（id/text/author{id,name,screenName}/metrics{...}/createdAt/createdAtISO/isRetweet/retweetedBy/quotedTweet）。所有 ID、作者、正文均为编造值。",
+  "shape_source": "twitter-cli 0.8.5/serialization.py",
+  "cli_version": "twitter-cli 0.8.5",
+  "command": "twitter search <query> --json --max 10 --since 2026-09-21",
+  "raw_stdout_shape": "{\"ok\": true, \"schema_version\": \"1\", \"data\": [ ... ]}",
+  "payload": {
+    "ok": true,
+    "schema_version": "1",
+    "data": [
+      {
+        "id": "1900000000000000001",
+        "text": "Sample English post about consumer credit risk and BNPL delinquency trends.",
+        "author": {
+          "id": "9000000000000000001",
+          "name": "Sample Author One",
+          "screenName": "sample_author_one",
+          "profileImageUrl": "https://pbs.twimg.com/sample/normal.jpg",
+          "verified": false
+        },
+        "metrics": {
+          "likes": 120,
+          "retweets": 30,
+          "replies": 8,
+          "quotes": 2,
+          "views": 15000,
+          "bookmarks": 11
+        },
+        "createdAt": "Mon Sep 21 08:15:00 +0000 2026",
+        "createdAtLocal": "2026-09-21 16:15:00",
+        "createdAtISO": "2026-09-21T08:15:00Z",
+        "media": [],
+        "urls": [],
+        "isRetweet": false,
+        "retweetedBy": null,
+        "lang": "en",
+        "score": null
+      },
+      {
+        "id": "1900000000000000002",
+        "text": "RT @sample_author_three: 样本：中文推文讨论消费金融合规。",
+        "author": {
+          "id": "9000000000000000002",
+          "name": "Sample Author Two",
+          "screenName": "sample_author_two",
+          "profileImageUrl": "https://pbs.twimg.com/sample/normal2.jpg",
+          "verified": true
+        },
+        "metrics": {
+          "likes": 45,
+          "retweets": 12,
+          "replies": 3,
+          "quotes": 0,
+          "views": 4200,
+          "bookmarks": 1
+        },
+        "createdAt": "Tue Sep 22 01:02:03 +0000 2026",
+        "createdAtLocal": "2026-09-22 09:02:03",
+        "createdAtISO": "2026-09-22T01:02:03Z",
+        "media": [],
+        "urls": [
+          "https://t.co/sample0001"
+        ],
+        "isRetweet": true,
+        "retweetedBy": "sample_author_two",
+        "lang": "zh",
+        "score": null,
+        "quotedTweet": {
+          "id": "1900000000000000003",
+          "text": "样本：被引用的原帖正文。",
+          "author": {
+            "screenName": "sample_author_three",
+            "name": "Sample Author Three"
+          }
+        }
+      },
+      {
+        "id": "1900000000000000004",
+        "text": "样本：一条 metrics 不全的推文（缺 views / bookmarks）。",
+        "author": {
+          "id": "9000000000000000004",
+          "name": "Sample Author Four",
+          "screenName": "sample_author_four"
+        },
+        "metrics": {
+          "likes": 5,
+          "retweets": 1,
+          "replies": 0,
+          "quotes": 0
+        },
+        "createdAt": "Wed Sep 23 12:00:00 +0000 2026",
+        "createdAtISO": "2026-09-23T12:00:00Z",
+        "isRetweet": false,
+        "retweetedBy": null,
+        "lang": "zh",
+        "score": null
+      }
+    ]
+  },
+  "expected": {
+    "record_count": 3,
+    "missing_metrics_are_none": [
+      "views",
+      "bookmarks"
+    ],
+    "author_key_prefix": "anon_",
+    "author_key_never_contains": [
+      "sample_author_one",
+      "sample_author_two",
+      "sample_author_four"
+    ]
+  },
+  "variants": {
+    "bare_list": {
+      "__note__": "tweets_to_json 直接输出裸数组，也必须支持",
+      "payload": [
+        {
+          "id": "1900000000000000010",
+          "text": "裸数组样本推文。",
+          "author": {
+            "id": "9000000000000000010",
+            "name": "Sample Ten",
+            "screenName": "sample_author_ten"
+          },
+          "metrics": {
+            "likes": 1,
+            "retweets": 0,
+            "replies": 0,
+            "quotes": 0,
+            "views": 10,
+            "bookmarks": 0
+          },
+          "createdAtISO": "2026-09-24T00:00:00Z",
+          "isRetweet": false,
+          "lang": "zh"
+        }
+      ]
+    },
+    "nested_tweets": {
+      "__note__": "data 里再嵌 tweets 数组",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": {
+          "tweets": [
+            {
+              "id": "1900000000000000011",
+              "text": "嵌套 tweets 样本。",
+              "author": {
+                "id": "9000000000000000011",
+                "screenName": "sample_author_eleven"
+              },
+              "metrics": {
+                "likes": 2
+              },
+              "createdAtISO": "2026-09-24T01:00:00Z"
+            }
+          ]
+        }
+      }
+    },
+    "no_metrics_at_all": {
+      "__note__": "整条 metrics 缺失 → 所有互动数必须是 None，不得填 0",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [
+          {
+            "id": "1900000000000000012",
+            "text": "完全没有 metrics 的样本推文。",
+            "author": {
+              "id": "9000000000000000012",
+              "screenName": "sample_author_twelve"
+            },
+            "createdAtISO": "2026-09-24T02:00:00Z"
+          }
+        ]
+      }
+    },
+    "empty_ok": {
+      "__note__": "上游明示 0 条 → empty_ok",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [],
+        "total": 0
+      }
+    },
+    "empty_unverified": {
+      "__note__": "空数组但无总数 → empty_unverified",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": []
+      }
+    },
+    "error_envelope": {
+      "__note__": "twitter-cli 真实错误信封（rc=0 也可能出现）→ 必须按错误码处理，不能当空结果",
+      "payload": {
+        "ok": false,
+        "schema_version": "1",
+        "error": {
+          "code": "not_authenticated",
+          "message": "sample: not authenticated"
+        }
+      }
+    },
+    "missing_list_key": {
+      "__note__": "缺少结果列表 → 契约错误",
+      "payload": {
+        "ok": true,
+        "schema_version": "1"
+      }
+    }
+  }
+}

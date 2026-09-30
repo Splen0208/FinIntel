@@ -1,0 +1,79 @@
+{
+  "__OFFLINE_FIXTURE__": true,
+  "__note__": "脱敏形状样本，非真实数据，不得当作平台可用性证据。字段结构依据本机已安装的 OpenCLI 1.8.8 clis/xiaohongshu/search.js（columns: rank/title/author/likes/published_at/url，并含 author_url）。所有 ID、作者名、标题、链接均为编造值，xsec_token 使用哨兵假值。",
+  "shape_source": "OpenCLI 1.8.8/clis/xiaohongshu/search.js",
+  "cli_version": "opencli 1.8.8",
+  "command": "opencli xiaohongshu search <keyword> --format json --limit 5 --sort comprehensive",
+  "raw_stdout_shape": "bare JSON array (opencli --format json 直接打印数组，无 {ok,data} 信封)",
+  "payload": [
+    {
+      "rank": 1,
+      "title": "风控岗转行三个月，说点真实的体感",
+      "author": "样本作者A",
+      "likes": "1.2万",
+      "url": "https://www.xiaohongshu.com/search_result/657a0f11sample0001?xsec_token=SENTINEL_SECRET_XSEC_TOKEN_A",
+      "author_url": "https://www.xiaohongshu.com/user/profile/5f8a0000sample0001",
+      "published_at": "2026-09-20"
+    },
+    {
+      "rank": 2,
+      "title": "消费金融催收合规，入职前必须问清的三件事",
+      "author": "样本作者B",
+      "likes": "843",
+      "url": "https://www.xiaohongshu.com/search_result/657a0f11sample0002?xsec_token=SENTINEL_SECRET_XSEC_TOKEN_B",
+      "author_url": "https://www.xiaohongshu.com/user/profile/5f8a0000sample0002",
+      "published_at": "2026-09-19"
+    },
+    {
+      "rank": 3,
+      "title": "信贷审批岗面试复盘",
+      "author": "样本作者C",
+      "likes": "0",
+      "url": "https://www.xiaohongshu.com/search_result/657a0f11sample0003?xsec_token=SENTINEL_SECRET_XSEC_TOKEN_C",
+      "author_url": "https://www.xiaohongshu.com/user/profile/5f8a0000sample0003",
+      "published_at": ""
+    }
+  ],
+  "variants": {
+    "empty_ok": {
+      "__note__": "上游明示总数 0 的空结果（真的没有）",
+      "payload": {
+        "data": [],
+        "total": 0
+      }
+    },
+    "empty_unverified": {
+      "__note__": "空列表但上游没有明示总数：无法区分「确实没有 / 被隐藏 / 未渲染」",
+      "payload": []
+    },
+    "hidden_by_platform": {
+      "__note__": "平台明示需登录/安全限制：绝不能当 0 条",
+      "payload": {
+        "data": [],
+        "loginWall": true
+      }
+    },
+    "missing_list_key": {
+      "__note__": "缺少结果列表键 → 必须是契约错误，不能退化成空结果",
+      "payload": {
+        "ok": true
+      }
+    },
+    "null_data": {
+      "__note__": "显式 null 是「上游没给」，不是「0 条」",
+      "payload": {
+        "data": null
+      }
+    },
+    "error_envelope": {
+      "__note__": "错误信封（即使 returncode=0）→ 必须按错误码处理",
+      "payload": {
+        "ok": false,
+        "error": {
+          "code": "AUTH_REQUIRED",
+          "message": "sample: login required"
+        }
+      }
+    }
+  }
+}

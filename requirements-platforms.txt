@@ -1,0 +1,4 @@
+-r requirements.txt
+boss-agent-cli==2.0.0
+patchright==1.63.0
+twitter-cli==0.8.5

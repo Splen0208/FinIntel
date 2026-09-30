@@ -1,0 +1,133 @@
+{
+  "__OFFLINE_FIXTURE__": true,
+  "__note__": "脱敏形状样本，非真实数据，不得当作平台可用性证据。字段结构依据本机已安装的 OpenCLI 1.8.8 clis/xiaohongshu/note.js：命令声明 columns=['field','value']，func 返回 rows=[{field,value},...]，字段只有 title/author/content/likes/collects/comments(/tags)，**没有 note_id**。正文与作者均为编造值。",
+  "shape_source": "OpenCLI 1.8.8/clis/xiaohongshu/note.js",
+  "cli_version": "opencli 1.8.8",
+  "command": "opencli xiaohongshu note <note_url_with_xsec_token> --format json",
+  "raw_stdout_shape": "bare JSON array of {field, value}",
+  "locator": "https://www.xiaohongshu.com/search_result/657a0f11sample0001?xsec_token=SENTINEL_SECRET_XSEC_TOKEN_A",
+  "expected_id": "657a0f11sample0001",
+  "identity_evidence": "none",
+  "identity_evidence_note": "真实 note 输出不含 note_id/pageUrl，因此无法验证正文与目标一致 → source_url_verified 必须为 False，且不得把别的目标 ID 绑上来。",
+  "payload": [
+    {
+      "field": "title",
+      "value": "风控岗转行三个月，说点真实的体感"
+    },
+    {
+      "field": "author",
+      "value": "样本作者A"
+    },
+    {
+      "field": "content",
+      "value": "这是编造的笔记正文样本，用于离线契约测试。内容里不出现任何真实平台数据，也不含凭据：xsec_token=SENTINEL_SECRET_XSEC_TOKEN_A 只是哨兵假值。"
+    },
+    {
+      "field": "likes",
+      "value": "1.2万"
+    },
+    {
+      "field": "collects",
+      "value": "3200"
+    },
+    {
+      "field": "comments",
+      "value": "128"
+    },
+    {
+      "field": "tags",
+      "value": "风控, 消费金融, 转行"
+    }
+  ],
+  "variants": {
+    "matching_id": {
+      "__note__": "上游额外给了 id 且与 locator 一致 → 可置 source_url_verified=True",
+      "payload": [
+        {
+          "field": "title",
+          "value": "风控岗转行三个月，说点真实的体感"
+        },
+        {
+          "field": "content",
+          "value": "带 id 的样本正文。"
+        },
+        {
+          "field": "id",
+          "value": "657a0f11sample0001"
+        }
+      ]
+    },
+    "redirected_id": {
+      "__note__": "上游给的 id 与 locator 目标是另一篇笔记 → 必须 DETAIL_REDIRECTED，不得绑定",
+      "payload": [
+        {
+          "field": "title",
+          "value": "另一篇完全无关的笔记"
+        },
+        {
+          "field": "content",
+          "value": "这是别页正文，绝不能绑定成目标笔记。"
+        },
+        {
+          "field": "id",
+          "value": "657a0f11sample9999"
+        }
+      ]
+    },
+    "redirected_page_url": {
+      "__note__": "上游给了 pageUrl 但指向别篇 → 必须 DETAIL_REDIRECTED",
+      "payload": [
+        {
+          "field": "content",
+          "value": "别页正文样本。"
+        },
+        {
+          "field": "pageUrl",
+          "value": "https://www.xiaohongshu.com/explore/657a0f11sample9999"
+        }
+      ]
+    },
+    "truncated": {
+      "__note__": "长文截断：正文以省略号结尾 → detail_status 必须是 partial，不能当完整正文",
+      "payload": [
+        {
+          "field": "title",
+          "value": "长文样本"
+        },
+        {
+          "field": "content",
+          "value": "这是一段被截断的正文样本，后面还有很多内容…"
+        }
+      ]
+    },
+    "empty_list": {
+      "__note__": "空数组不是「正文为空」，而是拿不到业务响应 → 契约错误",
+      "payload": []
+    },
+    "manifest_shape": {
+      "__note__": "本机已复现的真实失败：opencli 被错误解析时把命令清单打到 stdout（rc=0 也要识别）",
+      "payload": [
+        {
+          "site": "xiaohongshu",
+          "name": "search",
+          "description": "sample",
+          "access": "read",
+          "columns": [
+            "rank"
+          ],
+          "modulePath": "xiaohongshu/search.js"
+        },
+        {
+          "site": "xiaohongshu",
+          "name": "note",
+          "description": "sample",
+          "access": "read",
+          "columns": [
+            "field"
+          ],
+          "modulePath": "xiaohongshu/note.js"
+        }
+      ]
+    }
+  }
+}

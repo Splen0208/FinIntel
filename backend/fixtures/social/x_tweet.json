@@ -1,0 +1,247 @@
+{
+  "__OFFLINE_FIXTURE__": true,
+  "__note__": "脱敏形状样本，非真实数据，不得当作平台可用性证据。字段结构依据本机 twitter-cli 0.8.5：tweet 命令的语义是「目标推文 + 它的回复」（client.fetch_tweet_detail 返回 focal tweet 与 replies 的混合列表），因此**必须按 id 定位目标，不能取 payload[0]**。本文件刻意把一条回复放在数组首位，用于验证该契约。所有 ID、作者、正文均为编造值。",
+  "shape_source": "twitter-cli 0.8.5/cli.py::tweet -> client.fetch_tweet_detail",
+  "cli_version": "twitter-cli 0.8.5",
+  "command": "twitter tweet <tweet_id> --json --full-text --max 20",
+  "raw_stdout_shape": "{\"ok\": true, \"schema_version\": \"1\", \"data\": [ reply, target, reply, ... ]}",
+  "target_id": "1900000000000000020",
+  "target_position_in_array": 1,
+  "payload": {
+    "ok": true,
+    "schema_version": "1",
+    "data": [
+      {
+        "id": "1900000000000000021",
+        "text": "这是一条回复样本：口径问题确实要问清楚。",
+        "author": {
+          "id": "9000000000000000021",
+          "name": "Sample Replier",
+          "screenName": "sample_replier_one"
+        },
+        "metrics": {
+          "likes": 2,
+          "retweets": 0,
+          "replies": 0,
+          "quotes": 0,
+          "views": 90,
+          "bookmarks": 0
+        },
+        "createdAtISO": "2026-09-24T03:00:00Z",
+        "isRetweet": false,
+        "lang": "zh"
+      },
+      {
+        "id": "1900000000000000020",
+        "text": "这是目标推文样本正文：讨论消费金融的合规与风控口径。",
+        "author": {
+          "id": "9000000000000000020",
+          "name": "Sample Target Author",
+          "screenName": "sample_target_author"
+        },
+        "metrics": {
+          "likes": 300,
+          "retweets": 40,
+          "replies": 12,
+          "quotes": 5,
+          "views": 88000,
+          "bookmarks": 60
+        },
+        "createdAt": "Thu Sep 24 02:30:00 +0000 2026",
+        "createdAtLocal": "2026-09-24 10:30:00",
+        "createdAtISO": "2026-09-24T02:30:00Z",
+        "media": [],
+        "urls": [],
+        "isRetweet": false,
+        "retweetedBy": null,
+        "lang": "zh",
+        "score": null
+      },
+      {
+        "id": "1900000000000000022",
+        "text": "第二条回复样本。",
+        "author": {
+          "id": "9000000000000000022",
+          "name": "Sample Replier Two",
+          "screenName": "sample_replier_two"
+        },
+        "metrics": {
+          "likes": 0,
+          "retweets": 0,
+          "replies": 0,
+          "quotes": 0,
+          "views": 12,
+          "bookmarks": 0
+        },
+        "createdAtISO": "2026-09-24T04:00:00Z",
+        "isRetweet": false,
+        "lang": "zh"
+      }
+    ]
+  },
+  "expected": {
+    "resolved_id": "1900000000000000020",
+    "must_not_be_first_element_id": "1900000000000000021",
+    "evidence_text": "这是目标推文样本正文：讨论消费金融的合规与风控口径。",
+    "author_key_prefix": "anon_",
+    "source_url_verified": true
+  },
+  "variants": {
+    "target_absent": {
+      "__note__": "数组里没有目标 id → 必须 DETAIL_REDIRECTED，而不是返回第一条",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [
+          {
+            "id": "1900000000000000031",
+            "text": "只有别人的回复，没有目标推文。",
+            "author": {
+              "id": "9000000000000000031",
+              "screenName": "sample_other"
+            },
+            "metrics": {
+              "likes": 1
+            },
+            "createdAtISO": "2026-09-24T05:00:00Z"
+          }
+        ]
+      }
+    },
+    "long_post_truncated": {
+      "__note__": "长帖截断（text 以省略号结尾）→ detail_status 必须是 partial，不能当完整正文",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [
+          {
+            "id": "1900000000000000040",
+            "text": "这是一段很长的帖子正文样本，被截断在这里…",
+            "author": {
+              "id": "9000000000000000040",
+              "screenName": "sample_long_author"
+            },
+            "metrics": {
+              "likes": 9
+            },
+            "createdAtISO": "2026-09-24T06:00:00Z",
+            "truncated": true
+          }
+        ]
+      }
+    },
+    "long_post_with_article_text": {
+      "__note__": "长帖给出更完整的 articleText → 用 articleText 作为正文，状态 complete",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [
+          {
+            "id": "1900000000000000041",
+            "text": "截断的短版本…",
+            "articleTitle": "样本长文标题",
+            "articleText": "这是完整的长文正文样本，比 text 更长更完整，应被采用为证据正文。",
+            "author": {
+              "id": "9000000000000000041",
+              "screenName": "sample_article_author"
+            },
+            "metrics": {
+              "likes": 9
+            },
+            "createdAtISO": "2026-09-24T07:00:00Z"
+          }
+        ]
+      }
+    },
+    "quote_and_retweet": {
+      "__note__": "引用推文 ID 与转发人都必须被记录（转发人同样匿名化）",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [
+          {
+            "id": "1900000000000000050",
+            "text": "转推样本。",
+            "author": {
+              "id": "9000000000000000050",
+              "screenName": "sample_rt_author"
+            },
+            "metrics": {
+              "likes": 3
+            },
+            "createdAtISO": "2026-09-24T08:00:00Z",
+            "isRetweet": true,
+            "retweetedBy": "sample_retweeter",
+            "quotedTweet": {
+              "id": "1900000000000000051",
+              "text": "被引用的原帖样本。",
+              "author": {
+                "screenName": "sample_quoted_author",
+                "name": "Sample Quoted"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "twitter_created_at_only": {
+      "__note__": "只有 Twitter 原生时间串（无 createdAtISO）→ 也必须解析成 UTC ISO8601",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [
+          {
+            "id": "1900000000000000060",
+            "text": "只有 createdAt 的样本。",
+            "author": {
+              "id": "9000000000000000060",
+              "screenName": "sample_time_author"
+            },
+            "metrics": {
+              "likes": 1
+            },
+            "createdAt": "Fri Sep 25 10:20:30 +0000 2026"
+          }
+        ]
+      }
+    },
+    "unknown_date_format": {
+      "__note__": "无法识别的时间 → published_at 置 NULL，原文进 published_at_raw",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [
+          {
+            "id": "1900000000000000070",
+            "text": "时间格式异常的样本。",
+            "author": {
+              "id": "9000000000000000070",
+              "screenName": "sample_badtime_author"
+            },
+            "metrics": {
+              "likes": 1
+            },
+            "createdAt": "not-a-real-date"
+          }
+        ]
+      }
+    },
+    "empty_ok": {
+      "__note__": "上游明示 0 条 → 目标不存在，DETAIL_REDIRECTED（不是 CONTRACT_CHANGED）",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": [],
+        "total": 0
+      }
+    },
+    "empty_unverified": {
+      "__note__": "空数组但无总数 → 无法确认目标，契约错误",
+      "payload": {
+        "ok": true,
+        "schema_version": "1",
+        "data": []
+      }
+    }
+  }
+}
